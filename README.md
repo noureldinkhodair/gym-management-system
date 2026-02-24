@@ -77,3 +77,39 @@ Backend Logic Implementation
 Computer Science student at MSA University
 Interested in Data Analytics & Cybersecurity
 Continuously building practical projects to enhance my technical expertise.
+
+
+## 📸 Screenshots
+
+### 🔐 Login Page
+![Login](screenshots/login.png)
+
+### 📝 Register Page
+![Register](screenshots/register.png)
+
+### 🏠 Home Page
+![Home](screenshots/index.png)
+
+### ℹ️ About Page
+![About](screenshots/about.png)
+
+### ℹ️ About (Section 2)
+![About 2](screenshots/about2.png)
+
+### 📊 Admin Dashboard
+![Dashboard](screenshots/dashboard.png)
+
+### 📊 Admin Dashboard (Detailed View)
+![Dashboard 2](screenshots/dashboard2.png)
+
+### 💳 Membership Page
+![Membership](screenshots/membership.png)
+
+### 💳 Membership Plans (Extended)
+![Membership 2](screenshots/membership2.png)
+
+### 💰 Payment Page
+![Payment](screenshots/payment.png)
+
+### 📞 Contact Page
+![Contact](screenshots/contact.png)
