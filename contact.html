@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Contact Us - Star Gym</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header>
+    <div class="navbar-container">
+      <img src="logo.jpeg" alt="Star Gym Logo" class="logo">
+      <nav>
+  <a href="index.html">Home</a>
+  <a href="about.html">About Us</a>
+  <a href="membership.html">Membership</a>
+  <a href="classes.html">Classes</a>
+  <a href="contact.html">Contact Us</a>
+
+  <span class="nav-account-slot">
+    <a id="nav-info" href="info.html" style="display:none;">My Account</a>
+    <a id="nav-admin" href="admin.html" style="display:none;">Admin</a>
+  </span>
+</nav>
+
+      <span class="navbar-slogan">Your Fitness Journey Starts Here</span>
+
+      <a href="login.html" class="login-icon" title="Login / Sign Up">
+        <img src="login.jpg" alt="Login/Sign up" style="width:34px; vertical-align:middle;">
+      </a>
+
+      <button id="logoutBtn" class="logout-btn" style="display:none; margin-left:10px;">
+  Logout
+</button>
+    </div>
+  </header>
+
+  <main>
+    <h1>Contact Us</h1>
+
+    <form id="contactForm">
+      <label for="name">Name:</label><br />
+      <input
+        type="text"
+        id="name"
+        name="name"
+        required
+        pattern="^[A-Za-z\u0600-\u06FF\s]+$"
+        title="Letters only"
+        oninput="this.value=this.value.replace(/[^A-Za-z\u0600-\u06FF\s]/g,'')"
+      /><br />
+
+      <label for="email">Email:</label><br />
+      <input
+        type="email"
+        id="email"
+        name="email"
+        required
+        pattern="^[a-zA-Z0-9._%+-]+@gmail\.com$"
+        title="Please enter a valid Gmail address (example@gmail.com)"
+      /><br />
+
+      <label for="phone">Phone Number:</label><br />
+      <input
+        type="tel"
+        id="phone"
+        name="phone"
+        required
+        pattern="^[0-9]{8,15}$"
+        title="Digits only"
+        oninput="this.value=this.value.replace(/[^0-9]/g,'')"
+      /><br />
+
+      <label for="message">Message:</label><br />
+      <textarea id="message" name="message" required></textarea><br />
+
+      <button type="submit">Send</button>
+    </form>
+
+    <p id="contact-error" style="color:#ff6b6b; margin-top:10px; min-height:18px;"></p>
+    <p id="contact-success" style="color:#4caf50; margin-top:4px; min-height:18px;"></p>
+
+    <div class="contact-info">
+      <h2>Contact Details</h2>
+      <p><strong>Phone Numbers:</strong><br>
+        +201070394404<br>
+        +201025533991
+      </p>
+      <p><strong>Email:</strong><br>
+        star.gym@gmail.com<br>
+        info@stargym.com
+      </p>
+      <p><strong>Working Hours:</strong><br>
+        Saturday - Thursday: 7:00 AM – 11:00 PM<br>
+        Friday: 10:00 AM – 6:00 PM
+      </p>
+    </div>
+  </main>
+
+  <script>
+    const contactForm = document.getElementById('contactForm');
+
+    if (contactForm) {
+      const contactError = document.getElementById('contact-error');
+      const contactSuccess = document.getElementById('contact-success');
+
+      contactForm.addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        const name    = e.target.name.value.trim();
+        const email   = e.target.email.value.trim();
+        const phone   = e.target.phone.value.trim();
+        const message = e.target.message.value.trim();
+
+        if (contactError) contactError.textContent = '';
+        if (contactSuccess) contactSuccess.textContent = '';
+
+        if (!name || !email || !phone || !message) {
+          if (contactError) contactError.textContent = 'Please fill all fields';
+          return;
+        }
+
+        const gmailRegex = /^[a-zA-Z0-9._%+-]+@gmail\.com$/;
+        if (!gmailRegex.test(email)) {
+          if (contactError) contactError.textContent =
+            'Email must be a valid Gmail address (example@gmail.com)';
+          return;
+        }
+
+        if (!/^[0-9]{8,15}$/.test(phone)) {
+          if (contactError) contactError.textContent =
+            'Phone must contain digits only (8–15 numbers).';
+          return;
+        }
+
+        const formData = new FormData();
+        formData.append('name', name);
+        formData.append('email', email);
+        formData.append('phone_number', phone);
+        formData.append('message', message);
+
+        fetch('save_contact.php', {
+          method: 'POST',
+          body: formData
+        })
+          .then(res => res.text())
+          .then(text => {
+            if (text === 'OK') {
+              if (contactSuccess) contactSuccess.textContent = 'Your message has been sent.';
+              e.target.reset();
+            } else {
+              if (contactError) contactError.textContent = 'Error: ' + text;
+            }
+          })
+          .catch(err => {
+            console.error(err);
+            if (contactError) contactError.textContent =
+              'Server error, please try again later.';
+          });
+      });
+    }
+  </script>
+
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const type = localStorage.getItem('type');   
+  const infoLink  = document.getElementById('nav-info');
+  const adminLink = document.getElementById('nav-admin');
+
+  if (type === 'user') {
+    if (infoLink)  infoLink.style.display  = 'inline-block';
+    if (adminLink) adminLink.style.display = 'none';
+  } else if (type === 'admin') {
+    if (adminLink) adminLink.style.display = 'inline-block';
+    if (infoLink)  infoLink.style.display  = 'none';
+  } else {
+    if (infoLink)  infoLink.style.display  = 'none';
+    if (adminLink) adminLink.style.display = 'none';
+  }
+});
+</script>
+
+  <script>
+    const loginType = localStorage.getItem("type");
+    const loginIcon = document.querySelector(".login-icon");
+    const logoutBtn = document.getElementById("logoutBtn");
+
+    if (loginType === "user" || loginType === "admin") {
+      if (loginIcon) loginIcon.style.display = "none";
+      if (logoutBtn) logoutBtn.style.display = "inline-block";
+    } else {
+      if (loginIcon) loginIcon.style.display = "inline-block";
+      if (logoutBtn) logoutBtn.style.display = "none";
+    }
+
+    if (logoutBtn) {
+      logoutBtn.addEventListener("click", function () {
+        localStorage.removeItem("type");
+        localStorage.removeItem("userInfo");
+        window.location.href = "login.html";
+      });
+    }
+  </script>
+</body>
+</html>

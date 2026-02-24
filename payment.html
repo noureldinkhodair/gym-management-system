@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Payment - Star Gym</title>
+  <style>
+    body{
+      font-family: Arial, sans-serif;
+      background:#f3f7fb;
+      margin:0;
+      padding:40px 0;
+      display:flex;
+      justify-content:center;
+      align-items:flex-start;
+    }
+    .pay-card{
+      width:380px;
+      background:#fff;
+      border-radius:18px;
+      box-shadow:0 10px 25px rgba(0,0,0,0.08);
+      overflow:hidden;
+    }
+    .pay-header{
+      text-align:center;
+      padding:20px 20px 10px;
+    }
+    .pay-header img{
+      width:56px;
+      height:56px;
+      border-radius:50%;
+      object-fit:cover;
+      margin-bottom:6px;
+    }
+    .pay-header h2{
+      margin:4px 0 0;
+      color:#ff6b00;
+      font-size:20px;
+    }
+    .summary-box{
+      padding:10px 24px 16px;
+      border-top:1px solid #eee;
+      border-bottom:1px solid #eee;
+      background:#fff;
+    }
+    .sum-row{
+      display:flex;
+      justify-content:space-between;
+      padding:8px 0;
+      font-size:14px;
+    }
+    .sum-row.total{
+      margin-top:6px;
+      border-top:1px solid #eee;
+      padding-top:10px;
+      font-weight:bold;
+    }
+    .sum-row span:first-child{
+      color:#444;
+    }
+    .sum-row span:last-child{
+      color:#000;
+    }
+    .brands{
+      display:flex;
+      justify-content:center;
+      gap:18px;
+      padding:14px 0 4px;
+    }
+    .brands img{
+      height:32px; 
+      object-fit:contain;
+      display:block;
+    }
+    .sub-info{
+      padding:4px 24px 10px;
+      font-size:13px;
+      color:#444;
+    }
+    .sub-info span{
+      font-weight:bold;
+    }
+    .pay-form{
+      padding:8px 24px 20px;
+      font-size:12px;
+    }
+    .pay-label{
+      text-transform:uppercase;
+      color:#999;
+      margin-top:8px;
+      margin-bottom:4px;
+    }
+    .pay-input{
+      width:100%;
+      padding:8px 6px;
+      border:none;
+      border-bottom:1px solid #ddd;
+      outline:none;
+      font-size:13px;
+    }
+    .pay-input:focus{
+      border-bottom-color:#4255ff;
+    }
+    .pay-row{
+      display:flex;
+      gap:16px;
+    }
+    .pay-row .pay-group{
+      flex:1;
+    }
+    .pay-footer{
+      background:#283593;
+      padding:14px;
+      text-align:center;
+    }
+    .pay-footer button{
+      width:100%;
+      background:transparent;
+      border:none;
+      color:#fff;
+      font-size:15px;
+      font-weight:bold;
+      letter-spacing:1px;
+      cursor:pointer;
+    }
+    .pay-footer button:active{
+      opacity:0.8;
+    }
+    .pay-error{
+      color:#ff5252;
+      font-size:12px;
+      min-height:16px;
+      margin-top:6px;
+      text-align:center;
+    }
+    .pay-success{
+      color:#4caf50;
+      font-size:12px;
+      min-height:16px;
+      margin-top:4px;
+      text-align:center;
+    }
+  </style>
+</head>
+<body>
+
+<div class="pay-card">
+  <div class="pay-header">
+    <img src="logo.jpeg" alt="Star Gym Logo">
+    <h2>Payment Summary</h2>
+  </div>
+
+  <div class="summary-box" id="summaryBox">
+  </div>
+
+  <div class="brands">
+    <img src="visa.png" alt="Visa">
+    <img src="master.png" alt="MasterCard">
+    <img src="paypal.png" alt="PayPal">
+  </div>
+
+  <div class="sub-info" id="subInfo"></div>
+
+  <form class="pay-form" id="payForm" onsubmit="return false;">
+    <div class="pay-label">Cardholder's Name</div>
+    <input class="pay-input" type="text" id="cardName" placeholder="John Doe">
+
+    <div class="pay-label">Card Number</div>
+    <input class="pay-input" type="text" id="cardNumber" maxlength="19" placeholder="•••• •••• •••• 1234">
+
+    <div class="pay-row">
+      <div class="pay-group">
+        <div class="pay-label">Exp date</div>
+        <input class="pay-input" type="text" id="expDate" placeholder="07/2028">
+      </div>
+      <div class="pay-group">
+        <div class="pay-label">CVC/CVV</div>
+        <input class="pay-input" type="text" id="cvc" maxlength="4" placeholder="•••">
+      </div>
+    </div>
+
+    <div class="pay-error" id="payError"></div>
+    <div class="pay-success" id="paySuccess"></div>
+  </form>
+
+  <div class="pay-footer">
+    <button id="payBtn">PAY NOW</button>
+  </div>
+</div>
+
+<script>
+  const pending = JSON.parse(localStorage.getItem("pendingRegistration") || "null");
+  const summaryBox = document.getElementById("summaryBox");
+  const subInfo    = document.getElementById("subInfo");
+  const payError   = document.getElementById("payError");
+  const paySuccess = document.getElementById("paySuccess");
+
+  if (!pending || !pending.subscription_id) {
+    summaryBox.innerHTML = "<p style='font-size:14px;color:#e53935;'>No pending registration. Please register first.</p>";
+  } else {
+    fetch("api.php?entity=subscriptions&action=list")
+      .then(r => r.json())
+      .then(list => {
+        if (!Array.isArray(list)) {
+          summaryBox.innerHTML = "<p style='font-size:14px;color:#e53935;'>Failed to load subscription info.</p>";
+          return;
+        }
+        const sub = list.find(s => Number(s.subscription_id) === Number(pending.subscription_id));
+        if (!sub) {
+          summaryBox.innerHTML = "<p style='font-size:14px;color:#e53935;'>Subscription not found.</p>";
+          return;
+        }
+
+        const price = Number(sub.price || 0).toFixed(2);
+
+        subInfo.innerHTML = `
+          Subscription: <span>${sub.name}</span> —
+          Price: <span>$${price}</span>
+        `;
+
+        summaryBox.innerHTML = `
+          <div class="sum-row">
+            <span>Name</span>
+            <span>${pending.name || ""}</span>
+          </div>
+          <div class="sum-row total">
+            <span>TOTAL</span>
+            <span>$${price}</span>
+          </div>
+        `;
+
+        window.paymentAmount = price;
+      })
+      .catch(err => {
+        console.error(err);
+        summaryBox.innerHTML = "<p style='font-size:14px;color:#e53935;'>Error connecting to server.</p>";
+      });
+  }
+
+  document.getElementById("cardNumber").addEventListener("input", function () {
+    this.value = this.value.replace(/\D/g, "");   
+  });
+
+  document.getElementById("cvc").addEventListener("input", function () {
+    this.value = this.value.replace(/\D/g, "");   
+  });
+
+  document.getElementById("cardName").addEventListener("input", function () {
+    this.value = this.value.replace(/[^a-zA-Z\s]/g, ""); 
+  });
+
+  document.getElementById("expDate").addEventListener("input", function () {
+    this.value = this.value.replace(/[^0-9/]/g, ""); 
+  });
+
+  document.getElementById("payBtn").addEventListener("click", async function () {
+    payError.textContent = "";
+    paySuccess.textContent = "";
+
+    const name   = document.getElementById("cardName").value.trim();
+    const number = document.getElementById("cardNumber").value.trim();
+    const exp    = document.getElementById("expDate").value.trim();
+    const cvc    = document.getElementById("cvc").value.trim();
+
+    if (!name || !number || !exp || !cvc) {
+      payError.textContent = "Please fill all card details.";
+      return;
+    }
+    if (!/^[a-zA-Z\s]+$/.test(name)) {
+      payError.textContent = "Name must contain letters only.";
+      return;
+    }
+    if (!/^\d{16}$/.test(number)) {
+      payError.textContent = "Card number must be 16 digits.";
+      return;
+    }
+    if (!/^\d{3,4}$/.test(cvc)) {
+      payError.textContent = "CVC must be 3 or 4 digits.";
+      return;
+    }
+    if (!/^\d{2}\/\d{2,4}$/.test(exp)) {
+      payError.textContent = "Exp date must be in MM/YY format.";
+      return;
+    }
+    if (!pending) {
+      payError.textContent = "No pending registration data.";
+      return;
+    }
+
+    try {
+      const formData = new FormData();
+      formData.append('name',            pending.name);
+      formData.append('gmail',           pending.gmail);
+      formData.append('phone_number',    pending.phone_number);
+      formData.append('age',             pending.age);
+      formData.append('password',        pending.password);
+      formData.append('subscription_id', pending.subscription_id);
+      formData.append('gym_id',          pending.gym_id);
+      formData.append('mode',            'api');
+
+      const regRes  = await fetch('register.php', { method:'POST', body: formData });
+      const regJson = await regRes.json();
+
+      if (!regJson.success) {
+        payError.textContent = regJson.message || 'Registration failed on server.';
+        return;
+      }
+
+      const memberId = regJson.member_id;
+      const amount   = Number(window.paymentAmount || 0);
+
+      const payRes  = await fetch('api.php?entity=payment&action=add', {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({
+          member_id: memberId,
+          amount:    amount,
+          date:      new Date().toISOString().slice(0,10)
+        })
+      });
+      const payJson = await payRes.json();
+      if (!payJson.success) {
+        payError.textContent = 'Payment saving failed.';
+        return;
+      }
+
+      localStorage.removeItem('pendingRegistration');
+      paySuccess.textContent = "Payment successful. Completing registration...";
+
+      setTimeout(() => {
+        window.location.href = 'register.html?reg=success';
+      }, 1500);
+
+    } catch (err) {
+      console.error(err);
+      payError.textContent = "Server error while processing payment.";
+    }
+  });
+</script>
+</body>
+</html>

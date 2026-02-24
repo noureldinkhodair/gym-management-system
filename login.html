@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login | Sign Up - Star Gym</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header>
+    <div class="navbar-container">
+      <img src="logo.jpeg" alt="Star Gym Logo" class="logo">
+      <nav>
+  <a href="index.html">Home</a>
+  <a href="about.html">About Us</a>
+  <a href="membership.html">Membership</a>
+  <a href="classes.html">Classes</a>
+  <a href="contact.html">Contact Us</a>
+
+<span class="nav-account-slot">
+    <a id="nav-info" href="info.html" style="display:none;">My Account</a>
+    <a id="nav-admin" href="admin.html" style="display:none;">Admin</a>
+  </span>
+</nav>
+
+      <span class="navbar-slogan">Your Fitness Journey Starts Here</span>
+      <a href="login.html" class="login-icon" title="Login / Sign Up">
+        <svg width="48" height="48" viewBox="0 0 48 48">
+          <circle cx="24" cy="24" r="22" fill="#FFD600"/>
+          <circle cx="24" cy="19" r="10" fill="none" stroke="#191919" stroke-width="3"/>
+          <path d="M10 38c0-7.5 28-7.5 28 0" stroke="#191919" stroke-width="3" fill="none" stroke-linecap="round"/>
+        </svg>
+      </a>
+    </div>
+  </header>
+
+  <main>
+    <div class="login-container">
+      <h1>Login / Sign Up</h1>
+      <form>
+        <div class="user-type">
+          <label>
+            <input type="radio" name="usertype" value="member" checked> Membership
+          </label>
+          <br />
+          <label>
+            <input type="radio" name="usertype" value="staff"> Staff
+          </label>
+        </div>
+
+        <input
+          type="email"
+          placeholder="Email"
+          id="email-field"
+          required
+          pattern="^[a-zA-Z0-9._%+-]+@gmail\.com$"
+          title="Please enter a valid Gmail address (example@gmail.com)" /><br />
+
+        <input
+          type="password"
+          placeholder="Password"
+          id="password-field"
+          required /><br />
+
+        <button type="button" id="login-btn">Log in</button>
+        <button type="button" onclick="window.location.href='register.html'">
+          I Want To Become A Member
+        </button>
+      </form>
+
+      <p id="login-error" style="color:#ff6b6b; margin-top:10px; min-height:18px;"></p>
+      <p id="login-success" style="color:#4caf50; margin-top:4px; min-height:18px;"></p>
+    </div>
+  </main>
+
+  <script>
+    document.getElementById("login-btn").addEventListener("click", function () {
+      var email = document.getElementById('email-field').value.trim();
+      var password = document.getElementById('password-field').value.trim();
+      var isMember = document.querySelector('input[name="usertype"]:checked').value === "member";
+
+      var errorBox = document.getElementById('login-error');
+      var successBox = document.getElementById('login-success');
+      errorBox.textContent = "";
+      successBox.textContent = "";
+
+      if (!email || !password) {
+        errorBox.textContent = "Please fill email and password";
+        return;
+      }
+
+      var gmailRegex = /^[a-zA-Z0-9._%+-]+@gmail\.com$/;
+      if (!gmailRegex.test(email)) {
+        errorBox.textContent = "Email must be a valid Gmail address (example@gmail.com)";
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append("usertype", isMember ? "member" : "staff");
+      formData.append("email", email);
+      formData.append("password", password);
+
+      fetch("login.php", {
+        method: "POST",
+        body: formData
+      })
+        .then(res => res.json())
+        .then(data => {
+          if (data.success) {
+            localStorage.setItem("type", data.type);          
+            localStorage.setItem("userInfo", JSON.stringify(data.user));
+
+            successBox.textContent = "Login successful, redirecting...";
+           setTimeout(function () {
+              window.location.href = "index.html";
+          }, 800);
+
+          } else {
+            errorBox.textContent = data.message || "Invalid credentials";
+          }
+        })
+        .catch(err => {
+          console.error(err);
+          errorBox.textContent = "Server error, please try again later";
+        });
+    });
+  </script>
+</body>
+</html>

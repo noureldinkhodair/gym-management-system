@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Info Page</title>
+  <link rel="stylesheet" href="style.css">
+
+  <style>
+    .info-box{
+      width:500px;
+      margin:30px auto;
+      background:#222;
+      padding:25px;
+      border-radius:10px;
+      color:white;
+    }
+
+    input, button{
+      width:100%;
+      padding:10px;
+      margin-top:10px;
+    }
+
+    .modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.6);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+
+    .modal-content {
+      background: #222;
+      color: #fff;
+      padding: 20px 24px;
+      border-radius: 10px;
+      min-width: 320px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.4);
+    }
+
+    .modal-content h2 {
+      margin-top: 0;
+      color: #FFD600;
+    }
+
+    .modal-content input {
+      width: 100%;
+      padding: 8px;
+      margin: 6px 0 14px 0;
+      border-radius: 5px;
+      border: 1px solid #555;
+      background: #111;
+      color: #fff;
+      box-sizing: border-box;
+    }
+
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+
+    .small-btn {
+      background: #1976D2;
+      color: #fff;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      width: auto;
+      margin-top: 0;
+    }
+
+    .small-btn.secondary {
+      background: #555;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="navbar-container">
+    <img src="logo.jpeg" alt="Star Gym Logo" class="logo">
+   <nav>
+  <a href="index.html">Home</a>
+  <a href="about.html">About Us</a>
+  <a href="membership.html">Membership</a>
+  <a href="classes.html">Classes</a>
+  <a href="contact.html">Contact Us</a>
+
+  <span class="nav-account-slot">
+    <a id="nav-info" href="info.html" style="display:none;">My Account</a>
+    <a id="nav-admin" href="admin.html" style="display:none;">Admin</a>
+  </span>
+</nav>
+
+
+    <span class="navbar-slogan">Your Fitness Journey Starts Here</span>
+  </div>
+</header>
+
+<script>
+  const navInfo = document.getElementById("nav-info");
+  const type = localStorage.getItem("type");
+  if (navInfo) {
+    navInfo.style.display = (type === "user") ? "inline-block" : "none";
+  }
+</script>
+
+<h1 style="color:#FFD600;text-align:center;">Member Information</h1>
+
+<div id="userBox" class="info-box" style="display:none">
+  <h2>Your Profile</h2>
+  <p><b>Name:</b> <span id="fullName"></span></p>
+  <p><b>ID:</b> <span id="memberID"></span></p>
+  <p><b>Phone:</b> <span id="phone"></span></p>
+  <p><b>Email:</b> <span id="email"></span></p>
+  <p><b>Age:</b> <span id="age"></span></p>
+
+  <p><b>Gym Branch:</b> <span id="gymName"></span></p>
+  <p><b>Start Date:</b> <span id="startDate"></span></p>
+  <p><b>End Date:</b> <span id="endDate"></span></p>
+
+  <p><b>Inbody Scans Left:</b> <span id="inbody_left"></span></p>
+  <p><b>Freeze Days Left:</b> <span id="freeze_left"></span></p>
+  <p><b>Private Sessions Left:</b> <span id="private_sessions_left"></span></p>
+  <p><b>Invitations Left:</b> <span id="invitations_left"></span></p>
+
+  <button id="editBtn" class="logout-btn" style="display:none; margin-top:10px;">
+    Edit Info
+  </button>
+
+  <button id="logoutBtn" class="logout-btn" style="display:none; margin-top:20px;">
+    Logout
+  </button>
+</div>
+
+<script>
+  const loginType = localStorage.getItem("type");
+
+  function loadUserInfo() {
+    const data = JSON.parse(localStorage.getItem("userInfo") || "{}");
+    if (!data || (!data.member_id && !data.id)) return;
+
+    document.getElementById("userBox").style.display = "block";
+
+    document.getElementById("fullName").textContent   = data.name || '';
+    document.getElementById("memberID").textContent   = data.member_id || data.id || '';
+    document.getElementById("phone").textContent      = data.phone_number || data.phone || '';
+    document.getElementById("email").textContent      = data.gmail || data.email || '';
+    document.getElementById("age").textContent        =
+      (data.age !== undefined && data.age !== null) ? data.age : '';
+
+    document.getElementById("startDate").textContent  = data.start_date || '';
+    document.getElementById("endDate").textContent    = data.end_date   || '';
+    document.getElementById("gymName").textContent    = data.gym_name || '';
+
+    document.getElementById("inbody_left").textContent =
+      (data.inbody_left !== undefined && data.inbody_left !== null) ? data.inbody_left : '';
+
+    document.getElementById("freeze_left").textContent =
+      (data.freeze_left !== undefined && data.freeze_left !== null) ? data.freeze_left : '';
+
+    document.getElementById("private_sessions_left").textContent =
+      (data.private_sessions_left !== undefined && data.private_sessions_left !== null) ? data.private_sessions_left : '';
+
+    document.getElementById("invitations_left").textContent =
+      (data.invitations_left !== undefined && data.invitations_left !== null) ? data.invitations_left : '';
+  }
+
+  loadUserInfo();
+</script>
+
+<div id="editPopup" class="modal">
+  <div class="modal-content">
+    <h2>Edit Your Info</h2>
+    <p id="editError" style="color:#ff6b6b; min-height:18px; margin:0 0 8px 0;"></p>
+    <label>Name</label>
+    <input type="text" id="editName">
+
+    <label>Phone</label>
+    <input type="text" id="editPhone">
+
+    <label>Email</label>
+    <input type="email" id="editEmail">
+
+    <label>Age</label>
+    <input type="number" id="editAge" min="0">
+
+    <div class="modal-actions">
+      <button id="saveEditBtn" class="small-btn">Save</button>
+      <button id="cancelEditBtn" class="small-btn secondary">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const editButton     = document.getElementById("editBtn");
+  const editPopup      = document.getElementById("editPopup");
+  const saveEditBtn    = document.getElementById("saveEditBtn");
+  const cancelEditBtn  = document.getElementById("cancelEditBtn");
+  const editNameInput  = document.getElementById("editName");
+  const editPhoneInput = document.getElementById("editPhone");
+  const editEmailInput = document.getElementById("editEmail");
+  const editAgeInput   = document.getElementById("editAge");
+  const editError      = document.getElementById("editError");
+
+  function openEditPopup() {
+    const data = JSON.parse(localStorage.getItem("userInfo") || "{}");
+    if (!data) return;
+
+    editError.textContent = "";   
+
+    editNameInput.value  = data.name || "";
+    editPhoneInput.value = data.phone_number || data.phone || "";
+    editEmailInput.value = data.gmail || data.email || "";
+    editAgeInput.value   =
+      (data.age !== undefined && data.age !== null) ? data.age : "";
+
+    editPopup.style.display = "flex";
+  }
+
+  function closeEditPopup() {
+    editPopup.style.display = "none";
+  }
+
+  if (editButton) {
+    editButton.addEventListener("click", openEditPopup);
+  }
+
+  if (cancelEditBtn) {
+    cancelEditBtn.addEventListener("click", closeEditPopup);
+  }
+
+  if (saveEditBtn) {
+    saveEditBtn.addEventListener("click", async function () {
+      const data = JSON.parse(localStorage.getItem("userInfo") || "{}");
+      const memberId = data.member_id || data.id;
+
+      if (!memberId) {
+        editError.textContent = "Cannot update: missing member_id";
+        return;
+      }
+
+      editError.textContent = ""; 
+
+      const updated = {
+        member_id:       memberId,
+        name:            editNameInput.value.trim(),
+        phone_number:    editPhoneInput.value.trim(),
+        gmail:           editEmailInput.value.trim(),
+        age:             editAgeInput.value ? parseInt(editAgeInput.value, 10) : null,
+        gym_id:          data.gym_id || null,
+        subscription_id: data.subscription_id || null,
+        start_date:      data.start_date || null,
+        end_date:        data.end_date || null
+      };
+
+      try {
+        const res = await fetch("api.php?entity=members&action=update", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(updated)
+        });
+
+        let result;
+        try {
+          result = await res.json();
+        } catch (e) {
+          console.error("Invalid JSON from API", e);
+          editError.textContent = "Server returned invalid response";
+          return;
+        }
+
+        console.log("update result:", result);
+
+        if (!res.ok || !result.success) {
+          editError.textContent = result?.error || "Unknown error";
+          return;
+        }
+
+        const newData = result.member || { ...data, ...updated };
+        localStorage.setItem("userInfo", JSON.stringify(newData));
+        loadUserInfo();
+        closeEditPopup();
+      } catch (e) {
+        console.error("Update member error", e);
+        editError.textContent = "Network error while updating info";
+      }
+    });
+  }
+</script>
+
+
+<script>
+  const loginType2 = localStorage.getItem("type");
+  const loginIcon  = document.querySelector(".login-icon");
+  const logoutBtn  = document.getElementById("logoutBtn");
+  const editBtn    = document.getElementById("editBtn");
+
+  if (loginType2 === "user" || loginType2 === "admin") {
+    if (loginIcon) loginIcon.style.display = "none";
+    if (logoutBtn) logoutBtn.style.display = "block";
+    if (editBtn)   editBtn.style.display   = "block";
+  } else {
+    if (loginIcon) loginIcon.style.display = "inline-block";
+    if (logoutBtn) logoutBtn.style.display = "none";
+    if (editBtn)   editBtn.style.display   = "none";
+  }
+
+  if (logoutBtn) {
+    logoutBtn.addEventListener("click", function () {
+      localStorage.removeItem("type");
+      localStorage.removeItem("userInfo");
+      window.location.href = "login.html";
+    });
+  }
+</script>
+
+</body>
+</html>

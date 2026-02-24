@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Classes - Star Gym</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+<header>
+  <div class="navbar-container">
+    <img src="logo.jpeg" alt="Star Gym Logo" class="logo">
+    <nav>
+      <a href="index.html">Home</a>
+      <a href="about.html">About Us</a>
+      <a href="membership.html">Membership</a>
+      <a href="classes.html">Classes</a>
+      <a href="contact.html">Contact Us</a>
+     <span class="nav-account-slot">
+    <a id="nav-info" href="info.html" style="display:none;">My Account</a>
+    <a id="nav-admin" href="admin.html" style="display:none;">Admin</a>
+  </span>
+    </nav>
+
+    <span class="navbar-slogan">Your Fitness Journey Starts Here</span>
+
+    <a href="login.html" class="login-icon" title="Login / Sign Up">
+      <svg width="48" height="48" viewBox="0 0 48 48">
+        <circle cx="24" cy="24" r="22" fill="#FFD600"/>
+        <circle cx="24" cy="19" r="10" fill="none" stroke="#191919" stroke-width="3"/>
+        <path d="M10 38c0-7.5 28-7.5 28 0" stroke="#191919" stroke-width="3" fill="none" stroke-linecap="round"/>
+      </svg>
+    </a>
+
+    <button id="logoutBtn" class="logout-btn" style="display:none; margin-left:10px;">
+      Logout
+    </button>
+  </div>
+</header>
+
+<main>
+  <h1 style="color: #FFD600; text-align: center; font-size: 2rem; margin-top:40px;">
+    Group Classes
+  </h1>
+  <p style="text-align:center; color:#ccc; font-size:0.9rem; margin-bottom:30px;">
+    Check the latest classes across all Star Gym branches.
+  </p>
+
+  <section style="max-width: 1100px; margin: 0 auto 60px; padding: 0 20px;">
+    <div id="classesGrid"
+         style="
+           display:grid;
+           grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+           gap:24px;
+         ">
+    </div>
+
+    <p id="emptyMsg" style="display:none; text-align:center; color:#999; margin-top:24px;">
+      No classes available at the moment.
+    </p>
+  </section>
+</main>
+
+<script src="main.js"></script>
+
+<script>
+async function loadClasses() {
+  try {
+    const res = await fetch('classes.php');
+    const data = await res.json();
+
+    if (!Array.isArray(data)) return;
+
+    const grid = document.getElementById('classesGrid');
+    const emptyMsg = document.getElementById('emptyMsg');
+
+    if (data.length === 0) {
+      emptyMsg.style.display = 'block';
+      return;
+    }
+
+    grid.innerHTML = '';
+
+    data.forEach(c => {
+      const card = document.createElement('div');
+      card.className = 'class-card';
+      card.style.background = '#0f172a';
+      card.style.borderRadius = '16px';
+      card.style.padding = '18px 18px 16px';
+      card.style.border = '1px solid #1f2937';
+      card.style.boxShadow = '0 10px 25px rgba(0,0,0,0.35)';
+      card.style.color = '#e5e7eb';
+      card.style.display = 'flex';
+      card.style.flexDirection = 'column';
+      card.style.gap = '8px';
+
+      card.innerHTML = `
+        <div style="font-size:20px;font-weight:600;color:#FFD600;margin-bottom:4px;">
+          ${c.class_name}
+        </div>
+
+        <div style="font-size:13px;display:flex;gap:6px;">
+          <span style="font-weight:600;color:#9ca3af;min-width:70px;">Time:</span>
+          <span>${c.schedule}</span>
+        </div>
+
+        <div style="font-size:13px;display:flex;gap:6px;">
+          <span style="font-weight:600;color:#9ca3af;min-width:70px;">Trainer:</span>
+          <span>${c.trainer_name}</span>
+        </div>
+
+        <div style="font-size:13px;display:flex;gap:6px;">
+          <span style="font-weight:600;color:#9ca3af;min-width:70px;">Gym:</span>
+          <span>${c.gym_name}</span>
+        </div>
+      `;
+      grid.appendChild(card);
+    });
+
+  } catch (err) {
+    console.error('Error loading classes', err);
+    const msg = document.getElementById('emptyMsg');
+    msg.textContent = 'Error loading classes. Please try again later.';
+    msg.style.display = 'block';
+  }
+}
+
+document.addEventListener('DOMContentLoaded', loadClasses);
+</script>
+
+<script>
+const loginType = localStorage.getItem("type");
+const loginIcon = document.querySelector(".login-icon");
+const logoutBtn = document.getElementById("logoutBtn");
+
+if (loginType === "user" || loginType === "admin") {
+  if (loginIcon) loginIcon.style.display = "none";
+  if (logoutBtn) logoutBtn.style.display = "inline-block";
+} else {
+  if (loginIcon) loginIcon.style.display = "inline-block";
+  if (logoutBtn) logoutBtn.style.display = "none";
+}
+
+if (logoutBtn) {
+  logoutBtn.addEventListener("click", function () {
+    localStorage.removeItem("type");
+    localStorage.removeItem("userInfo");
+    window.location.href = "login.html";
+  });
+}
+</script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const type = localStorage.getItem('type');
+  const infoLink  = document.getElementById('nav-info');
+  const adminLink = document.getElementById('nav-admin');
+
+  if (type === 'user') {
+    if (infoLink)  infoLink.style.display  = 'inline-block';
+    if (adminLink) adminLink.style.display = 'none';
+  } else if (type === 'admin') {
+    if (adminLink) adminLink.style.display = 'inline-block';
+    if (infoLink)  infoLink.style.display  = 'none';
+  } else {
+    if (infoLink)  infoLink.style.display  = 'none';
+    if (adminLink) adminLink.style.display = 'none';
+  }
+});
+</script>
+
+</body>
+</html>

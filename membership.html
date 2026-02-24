@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Membership - Star Gym</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+<header>
+  <div class="navbar-container">
+    <img src="logo.jpeg" alt="Star Gym Logo" class="logo">
+    <nav>
+      <a href="index.html">Home</a>
+      <a href="about.html">About Us</a>
+      <a href="membership.html">Membership</a>
+      <a href="classes.html">Classes</a>
+      <a href="contact.html">Contact Us</a>
+
+      <span class="nav-account-slot">
+        <a id="nav-info" href="info.html" style="display:none;">My Account</a>
+        <a id="nav-admin" href="admin.html" style="display:none;">Admin</a>
+      </span>
+    </nav>
+
+    <span class="navbar-slogan">Your Fitness Journey Starts Here</span>
+
+    <a href="login.html" class="login-icon" title="Login / Sign Up">
+      <svg width="48" height="48" viewBox="0 0 48 48">
+        <circle cx="24" cy="24" r="22" fill="#FFD600"/>
+        <circle cx="24" cy="19" r="10" fill="none" stroke="#191919" stroke-width="3"/>
+        <path d="M10 38c0-7.5 28-7.5 28 0" stroke="#191919" stroke-width="3" fill="none" stroke-linecap="round"/>
+      </svg>
+    </a>
+
+    <button id="logoutBtn" class="logout-btn" style="display:none; margin-left:10px;">
+      Logout
+    </button>
+  </div>
+</header>
+
+<main>
+  <h1 style="color: #FFD600; text-align: center; font-size: 2rem;">Membership Packages</h1>
+
+  <table class="membership-table">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Price (EGP)</th>
+      </tr>
+    </thead>
+    <tbody id="subs-price-tbody">
+    </tbody>
+  </table>
+
+  <table class="membership-features-table">
+    <thead>
+      <tr id="features-header-row">
+        <th>Feature</th>
+      </tr>
+    </thead>
+    <tbody id="features-body">
+    </tbody>
+  </table>
+
+  <button onclick="window.location.href='register.html'">Register for Star Gym</button>
+</main>
+
+<script src="main.js"></script>
+
+<script>
+async function loadSubscriptionsPublic() {
+  try {
+    const res = await fetch("api.php?entity=subscriptions&action=list");
+    const data = await res.json();
+
+    if (!Array.isArray(data) || data.length === 0) return;
+
+    const priceTbody = document.getElementById("subs-price-tbody");
+    priceTbody.innerHTML = "";
+
+    data.forEach((s) => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${s.name}</td>
+        <td>${s.price}</td>
+      `;
+      priceTbody.appendChild(tr);
+    });
+
+    const headerRow    = document.getElementById("features-header-row");
+    const featuresBody = document.getElementById("features-body");
+
+    headerRow.innerHTML = "<th>Feature</th>";
+    featuresBody.innerHTML = "";
+
+    data.forEach((s) => {
+      const th = document.createElement("th");
+      th.textContent = s.name;
+      headerRow.appendChild(th);
+    });
+
+    function addFeatureRow(label, fieldName, suffix) {
+      const tr = document.createElement("tr");
+      const featureTd = document.createElement("td");
+      featureTd.textContent = label;
+      tr.appendChild(featureTd);
+
+      data.forEach((s) => {
+        const td = document.createElement("td");
+        td.textContent = s[fieldName] + (suffix ? " " + suffix : "");
+        tr.appendChild(td);
+      });
+
+      featuresBody.appendChild(tr);
+    }
+
+    addFeatureRow("Freeze",           "max_freeze_days",      "days");
+    addFeatureRow("Invitation",       "max_invitations",      "Guests");
+    addFeatureRow("Inbody",           "max_inbody_scans",     "Scans");
+    addFeatureRow("Private Sessions", "max_private_sessions", "Sessions");
+
+  } catch (err) {
+    console.error("Error loading subscriptions for membership page", err);
+  }
+}
+
+document.addEventListener("DOMContentLoaded", loadSubscriptionsPublic);
+</script>
+
+<script>
+  const loginType = localStorage.getItem("type");
+  const loginIcon = document.querySelector(".login-icon");
+  const logoutBtn = document.getElementById("logoutBtn");
+
+  if (loginType === "user" || loginType === "admin") {
+    if (loginIcon) loginIcon.style.display = "none";
+    if (logoutBtn) logoutBtn.style.display = "inline-block";
+  } else {
+    if (loginIcon) loginIcon.style.display = "inline-block";
+    if (logoutBtn) logoutBtn.style.display = "none";
+  }
+
+  if (logoutBtn) {
+    logoutBtn.addEventListener("click", function () {
+      localStorage.removeItem("type");
+      localStorage.removeItem("userInfo");
+      window.location.href = "login.html";
+    });
+  }
+</script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const type      = localStorage.getItem('type');
+  const infoLink  = document.getElementById('nav-info');
+  const adminLink = document.getElementById('nav-admin');
+
+  if (type === 'user') {
+    if (infoLink)  infoLink.style.display  = 'inline-block';
+    if (adminLink) adminLink.style.display = 'none';
+  } else if (type === 'admin') {
+    if (adminLink) adminLink.style.display = 'inline-block';
+    if (infoLink)  infoLink.style.display  = 'none';
+  } else {
+    if (infoLink)  infoLink.style.display  = 'none';
+    if (adminLink) adminLink.style.display = 'none';
+  }
+});
+</script>
+
+</body>
+</html>
