@@ -105,9 +105,6 @@ Continuously building practical projects to enhance my technical expertise.
 ### 💳 Membership Page
 ![Membership](screenshots/membership.png)
 
-### 💳 Membership Plans (Extended)
-![Membership 2](screenshots/membership2.png)
-
 ### 💰 Payment Page
 ![Payment](screenshots/payment.png)
 
